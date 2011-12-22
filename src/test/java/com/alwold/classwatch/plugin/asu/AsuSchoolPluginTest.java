@@ -10,7 +10,8 @@ import com.alwold.classwatch.school.SchoolPlugin;
 public class AsuSchoolPluginTest {
 	public void testGetClassStatus() throws RetrievalException {
 		SchoolPlugin plugin = new AsuSchoolPlugin();
-		plugin.getClassStatus("2127", "12345");
+		plugin.getClassStatus("2121", "12638");
+		plugin.getClassInfo("2121", "12638");
 	}
 	
 }
