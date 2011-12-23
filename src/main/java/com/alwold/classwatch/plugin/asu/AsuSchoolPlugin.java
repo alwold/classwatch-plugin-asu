@@ -1,12 +1,10 @@
 package com.alwold.classwatch.plugin.asu;
 
 import com.alwold.classwatch.model.Status;
+import com.alwold.classwatch.school.BaseSchoolPlugin;
 import com.alwold.classwatch.school.ClassInfo;
 import com.alwold.classwatch.school.RetrievalException;
-import com.alwold.classwatch.school.SchoolPlugin;
 import com.alwold.classwatch.school.ScrapeException;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.xml.transform.TransformerException;
@@ -14,8 +12,6 @@ import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xpath.XPathAPI;
 import org.cyberneko.html.parsers.DOMParser;
 import org.w3c.dom.Document;
@@ -28,7 +24,7 @@ import org.xml.sax.SAXException;
  *
  * @author alwold
  */
-public class AsuSchoolPlugin implements SchoolPlugin {
+public class AsuSchoolPlugin extends BaseSchoolPlugin {
 	private static Logger logger = Logger.getLogger(AsuSchoolPlugin.class);
 
 	public ClassInfo getClassInfo(String termCode, String classNumber) throws RetrievalException {
@@ -92,18 +88,4 @@ public class AsuSchoolPlugin implements SchoolPlugin {
 			throw new RetrievalException(e);
 		}
 	}
-	
-	public void serializeDoc(Document doc) {
-		try {
-			XMLSerializer xmls = new XMLSerializer(System.out, new OutputFormat());
-			xmls.serialize(doc);
-			File file = File.createTempFile("debug", ".html");
-			xmls = new XMLSerializer(new FileWriter(file), new OutputFormat());
-			xmls.serialize(doc);
-			System.out.println("saved to file: "+file.getPath());
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-	}
-	
 }
