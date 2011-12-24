@@ -49,6 +49,9 @@ public class AsuSchoolPlugin extends BaseSchoolPlugin {
 		try {
 			Document doc = fetchInfo(termCode, classNumber);
 			Node node = XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='availableSeatsColumnValue']/TABLE/TBODY/TR/TD/SPAN/SPAN[@class='icontip']");
+			if (node == null) {
+				return null;
+			}
 			String status = node.getAttributes().getNamedItem("rel").getTextContent();
 			if (status.equals("#tt_seats-open")) {
 				logger.info("Class is open");
