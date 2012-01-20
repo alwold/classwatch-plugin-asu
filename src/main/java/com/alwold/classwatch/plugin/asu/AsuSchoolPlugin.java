@@ -8,9 +8,13 @@ import com.alwold.classwatch.school.ScrapeException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.xml.transform.TransformerException;
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.params.CoreConnectionPNames;
 import org.apache.log4j.Logger;
 import org.apache.xpath.XPathAPI;
 import org.cyberneko.html.parsers.DOMParser;
@@ -50,6 +54,7 @@ public class AsuSchoolPlugin extends BaseSchoolPlugin {
 			Document doc = fetchInfo(termCode, classNumber);
 			Node node = XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='availableSeatsColumnValue']/TABLE/TBODY/TR/TD/SPAN/SPAN[@class='icontip']");
 			if (node == null) {
+				logger.trace("couldn't find the node, returning null");
 				return null;
 			}
 			String status = node.getAttributes().getNamedItem("rel").getTextContent();
@@ -72,12 +77,19 @@ public class AsuSchoolPlugin extends BaseSchoolPlugin {
 	
 	private Document fetchInfo(String termCode, String classNumber) throws RetrievalException {
 		try {
-			HttpClient client = new HttpClient();
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 30000);
 			// TODO get the campus/online status from the term code or something
-			client.getState().addCookie(new Cookie("webapp4.asu.edu", "onlineCampusSelection", "C", "/catalog", -1, true));
-			GetMethod get = new GetMethod("https://webapp4.asu.edu/catalog/classlist?&k=" + classNumber + "&t=" + termCode + "&e=all&init=false&nopassive=true");
-			client.executeMethod(get);
-			InputStream is = get.getResponseBodyAsStream();
+			BasicClientCookie cookie = new BasicClientCookie("onlineCampusSelection", "C");
+			cookie.setDomain("webapp4.asu.edu");
+			cookie.setPath("/catalog");
+			cookie.setSecure(true);
+			CookieStore cookieStore = new BasicCookieStore();
+			cookieStore.addCookie(cookie);
+			client.setCookieStore(cookieStore);
+			HttpGet get = new HttpGet("https://webapp4.asu.edu/catalog/classlist?&k=" + classNumber + "&t=" + termCode + "&e=all&init=false&nopassive=true");
+			HttpResponse response = client.execute(get);
+			InputStream is = response.getEntity().getContent();
 			DOMParser parser = new DOMParser();
 			// somehow this prevents errors when using xpath
 			parser.setFeature("http://xml.org/sax/features/namespaces", false);
