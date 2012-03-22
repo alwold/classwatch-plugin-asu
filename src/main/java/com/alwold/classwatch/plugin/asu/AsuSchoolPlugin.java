@@ -35,10 +35,13 @@ public class AsuSchoolPlugin extends BaseSchoolPlugin {
 		try {
 			Document doc = fetchInfo(termCode, classNumber);
 			ClassInfo classInfo = new ClassInfo();
-			String name = ((Text) XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='titleColumnValue']/A/text()")).getTextContent();
-			String days = ((Text) XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='dayListColumnValue']/text()")).getTextContent();
-			String startTime = ((Text) XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='startTimeDateColumnValue']/text()")).getTextContent();
-			String endTime = ((Text) XPathAPI.selectSingleNode(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='endTimeDateColumnValue']/text()")).getTextContent();
+			String name = getText(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='titleColumnValue']/A/text()");
+			if (name == null) {
+				return null;
+			}
+			String days = getText(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='dayListColumnValue']/text()");
+			String startTime = getText(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='startTimeDateColumnValue']/text()");
+			String endTime = getText(doc, "//TR[TD/@class='classNbrColumnValue']/TD[@class='endTimeDateColumnValue']/text()");
 			classInfo.setName(name.trim());
 			classInfo.setSchedule(days.trim()+" "+startTime.trim()+" - "+endTime.trim());
 			logger.trace("name = "+classInfo.getName());
@@ -101,6 +104,15 @@ public class AsuSchoolPlugin extends BaseSchoolPlugin {
 			throw new RetrievalException(e);
 		} catch (SAXException e) {
 			throw new RetrievalException(e);
+		}
+	}
+	
+	private String getText(Document doc, String path) throws TransformerException {
+		Text textNode = (Text) XPathAPI.selectSingleNode(doc, path);
+		if (textNode != null) {
+			return textNode.getTextContent();
+		} else {
+			return null;
 		}
 	}
 }

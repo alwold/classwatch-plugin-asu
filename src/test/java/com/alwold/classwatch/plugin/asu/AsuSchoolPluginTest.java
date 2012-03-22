@@ -12,6 +12,8 @@ public class AsuSchoolPluginTest {
 		SchoolPlugin plugin = new AsuSchoolPlugin();
 		plugin.getClassStatus("2121", "12638");
 		plugin.getClassInfo("2121", "12638");
+		
+		plugin.getClassInfo("2124", "41901");
 	}
 	
 }
